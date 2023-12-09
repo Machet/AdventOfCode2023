@@ -1,0 +1,10 @@
+﻿LR
+
+DDA = (DDB, XXX)
+DDB = (XXX, DDZ)
+DDZ = (DDB, XXX)
+FFA = (FFB, XXX)
+FFB = (FFC, FFC)
+FFC = (FFZ, FFZ)
+FFZ = (FFB, FFB)
+XXX = (XXX, XXX)

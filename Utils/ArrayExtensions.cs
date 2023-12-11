@@ -90,6 +90,17 @@ public static class ArrayExtensions
 		}
 	}
 
+	public static IEnumerable<ArrayItem<T>> SelectItems<T>(this T[,] items)
+	{
+		for (int x = 0; x < items.GetLength(0); x++)
+		{
+			for (int y = 0; y < items.GetLength(1); y++)
+			{
+				yield return new ArrayItem<T>(new Point(x, y), items[x, y]);
+			}
+		}
+	}
+
 	public static IEnumerable<ArrayItem<T>> SelectItems<T>(this T[,] items, IEnumerable<Point> points)
 	{
 		foreach (var point in points)
@@ -105,6 +116,16 @@ public static class ArrayExtensions
 	{
 		if (!point.IsWithin(array)) throw new Exception();
 		return new ArrayItem<T>(point, array[point.X, point.Y]);
+	}
+
+	public static IEnumerable<T> GetColumn<T>(this T[,] array, int columnNumber)
+	{
+		return Enumerable.Range(0, array.GetLength(0)).Select(x => array[x, columnNumber]);
+	}
+
+	public static IEnumerable<T> GetRow<T>(this T[,] array, int rowNumber)
+	{
+		return Enumerable.Range(0, array.GetLength(1)).Select(x => array[rowNumber, x]).ToArray();
 	}
 
 	public static IEnumerable<T> Flatten<T>(this T[,] items)

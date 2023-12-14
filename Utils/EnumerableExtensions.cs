@@ -9,4 +9,15 @@ public static class EnumerableExtensions
 			.GroupBy(x => x.Index / count)
 			.Select(x => x.Select(v => v.Value).ToList());
 	}
+
+	public static IEnumerable<T> IterateInCircles<T>(this IEnumerable<T> items)
+	{
+		while (true)
+		{
+			foreach (var item in items)
+			{
+				yield return item;
+			}
+		}
+	}
 }

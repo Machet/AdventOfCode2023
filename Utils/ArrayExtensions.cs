@@ -112,6 +112,9 @@ public static class ArrayExtensions
 		}
 	}
 
+	public static ArrayItem<T> GetItem<T>(this T[,] array, int x, int y)
+		=> GetItem(array, new Point(x, y));
+
 	public static ArrayItem<T> GetItem<T>(this T[,] array, Point point)
 	{
 		if (!point.IsWithin(array)) throw new Exception();
@@ -168,44 +171,56 @@ public static class ArrayExtensions
 			}
 	}
 
-	public static T? GetLeft<T>(Point point, T[,] array)
+	public static ArrayItem<T>? GetInDirection<T>(this T[,] array, Point point, char dir)
+	{
+		return dir switch
+		{
+			'N' => GetNorthOf(array, point),
+			'S' => GetSouthOf(array, point),
+			'W' => GetWestOf(array, point),
+			'E' => GetEastOf(array, point),
+			_ => throw new ArgumentException()
+		};
+	}
+
+	public static ArrayItem<T>? GetNorthOf<T>(this T[,] array, Point point)
 	{
 		if (point.X <= 0)
 		{
-			return default(T);
+			return null;
 		}
 
-		return array[point.X - 1, point.Y];
+		return array.GetItem(point.X - 1, point.Y);
 	}
 
-	public static T? GetRight<T>(Point point, T[,] array)
+	public static ArrayItem<T>? GetSouthOf<T>(this T[,] array, Point point)
 	{
 		if (point.X >= array.GetLength(0) - 1)
 		{
-			return default(T);
+			return null;
 		}
 
-		return array[point.X + 1, point.Y];
+		return array.GetItem(point.X + 1, point.Y);
 	}
 
-	public static T? GetBottom<T>(Point point, T[,] array)
+	public static ArrayItem<T>? GetWestOf<T>(this T[,] array, Point point)
 	{
 		if (point.Y <= 0)
 		{
-			return default(T);
+			return null;
 		}
 
-		return array[point.X, point.Y - 1];
+		return array.GetItem(point.X, point.Y - 1);
 	}
 
-	public static T? GetTop<T>(Point point, T[,] array)
+	public static ArrayItem<T>? GetEastOf<T>(this T[,] array, Point point)
 	{
 		if (point.Y >= array.GetLength(1) - 1)
 		{
-			return default(T);
+			return null;
 		}
 
-		return array[point.X, point.Y + 1];
+		return array.GetItem(point.X, point.Y + 1);
 	}
 
 	private static IEnumerable<Point> GenerateNeighbours(Point point, bool includeDiagonal)

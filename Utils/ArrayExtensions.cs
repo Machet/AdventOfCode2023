@@ -19,6 +19,23 @@ public static class ArrayExtensions
 		return result;
 	}
 
+	public static int[,] ToIntArray(this string[] strings)
+	{
+		var lenght = strings.First().Length;
+		var result = new int[strings.Count(), lenght];
+		for (int i = 0; i < strings.Count(); i++)
+		{
+			var s = strings.ElementAt(i);
+
+			for (int j = 0; j < lenght; j++)
+			{
+				result[i, j] = int.Parse(s[j].ToString());
+			}
+		}
+
+		return result;
+	}
+
 	public static void Print<T>(this T[,] array)
 	{
 		for (int i = 0; i < array.GetLength(0); i++)

@@ -174,7 +174,7 @@ public static class ArrayExtensions
 		return array.Select(GenerateNeighbours(point, includeDiagonal));
 	}
 
-	public static IEnumerable<ArrayItem<T>> GetNeighbourItems<T>(this T[,] array, Point point, bool includeDiagonal)
+	public static IEnumerable<ArrayItem<T>> GetNeighbourItems<T>(this T[,] array, Point point, bool includeDiagonal = false)
 	{
 		return array.SelectItems(GenerateNeighbours(point, includeDiagonal));
 	}

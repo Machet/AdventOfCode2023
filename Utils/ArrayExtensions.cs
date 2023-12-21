@@ -36,13 +36,31 @@ public static class ArrayExtensions
 		return result;
 	}
 
-	public static void Print<T>(this T[,] array)
+	public static T[,] Repeat<T>(this T[,] array, int xTimes, int yTimes)
+	{
+		var xSize = array.GetLength(0);
+		var ySize = array.GetLength(1);
+		var output = new T[xSize * xTimes, ySize * yTimes];
+
+		for (int i = 0; i < xTimes * xSize; i++)
+		{
+			for (int j = 0; j < yTimes * ySize; j++)
+			{
+				output[i, j] = array[i % xSize, j % ySize];
+			}
+		}
+
+		return output;
+	}
+
+	public static void Print<T>(this T[,] array, string? separator = null)
 	{
 		for (int i = 0; i < array.GetLength(0); i++)
 		{
 			for (int j = 0; j < array.GetLength(1); j++)
 			{
 				Console.Write(array[i, j]);
+				if(separator != null) Console.Write(separator);
 			}
 
 			Console.WriteLine();

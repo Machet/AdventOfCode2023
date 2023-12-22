@@ -44,14 +44,25 @@ var blocksCarriedByMultiple = collisions.GroupBy(x => x.top)
 	.Select(x => x.Key)
 	.ToList();
 
-var blocksCarryingMultiple = collisions.GroupBy(x => x.bottom)
+var blocksThatCarySafeBlocks = collisions.GroupBy(x => x.bottom)
 	.Where(x => x.Select(xx => xx.top).All(xx => blocksCarriedByMultiple.Contains(xx)))
 	.ToList();
 
 var blocksOnTop = cubesOnGround.Where(c => !collisions.Any(col => col.bottom == c));
-var toDesintegrate = blocksCarryingMultiple.Count() + blocksOnTop.Count();
+var toDesintegrate = blocksThatCarySafeBlocks.Count() + blocksOnTop.Count();
+
+var blocksThatCauseFall = collisions.GroupBy(x => x.bottom)
+	.Where(x => x.Select(xx => xx.top).All(xx => blocksCarriedByMultiple.Contains(xx)))
+	.ToList();
+
+var totalFailingCount = 0;
+foreach (var block in collisions.Select(c => c.bottom).Distinct())
+{
+	totalFailingCount += GetFailingCount(collisions, block);
+}
 
 Console.WriteLine("1: " + toDesintegrate);
+Console.WriteLine("2: " + totalFailingCount);
 
 Cube ReadCubes(string line)
 {
@@ -59,6 +70,27 @@ Cube ReadCubes(string line)
 	var startParts = parts[0].Split(",").Select(i => int.Parse(i)).ToList();
 	var endParts = parts[1].Split(",").Select(i => int.Parse(i)).ToList();
 	return new Cube(new Point3D(startParts[0], startParts[1], startParts[2]), new Point3D(endParts[0], endParts[1], endParts[2]));
+}
+
+int GetFailingCount(List<Collision> collisions, Cube cubeToRemove)
+{
+	var existingCollisions = collisions.ToList();
+	var cubesToRemove = new Queue<Cube>();
+	cubesToRemove.Enqueue(cubeToRemove);
+	int count = 0;
+	while (cubesToRemove.Count != 0)
+	{
+		var toRemove = cubesToRemove.Dequeue();
+		var collisionsWithToRemove = existingCollisions.Where(c => c.bottom == toRemove).ToList();
+		var cubesThatCanFall = collisionsWithToRemove.Select(c => c.top).ToList();
+		existingCollisions = existingCollisions.Except(collisionsWithToRemove).ToList();
+
+		var cubesThatWillFall = cubesThatCanFall.Where(cube => !existingCollisions.Any(col => col.top == cube)).ToList();
+		count += cubesThatWillFall.Count;
+		cubesToRemove.EnqueueRange(cubesThatWillFall);
+	}
+
+	return count;
 }
 
 record Point3D(int x, int y, int z);

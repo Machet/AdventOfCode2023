@@ -60,7 +60,7 @@ public static class ArrayExtensions
 			for (int j = 0; j < array.GetLength(1); j++)
 			{
 				Console.Write(array[i, j]);
-				if(separator != null) Console.Write(separator);
+				if (separator != null) Console.Write(separator);
 			}
 
 			Console.WriteLine();
@@ -204,6 +204,14 @@ public static class ArrayExtensions
 			{
 				if (array[i, j].Equals(element)) yield return new ArrayItem<T>(new Point(i, j), element);
 			}
+	}
+
+	public static IEnumerable<ArrayItem<T>> FindArrayItemInRow<T>(this T[,] array, T element, int row)
+	{
+		for (int j = 0; j < array.GetLength(1); j++)
+		{
+			if (array[row, j].Equals(element)) yield return new ArrayItem<T>(new Point(row, j), element);
+		}
 	}
 
 	public static ArrayItem<T>? GetInDirection<T>(this T[,] array, Point point, char dir)

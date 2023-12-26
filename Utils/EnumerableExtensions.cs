@@ -21,6 +21,18 @@ public static class EnumerableExtensions
 		}
 	}
 
+	public static IEnumerable<(T first, T second)> GenerateAllCombinations<T>(this IEnumerable<T> items)
+	{
+		var toIterate = items.ToList();
+		for (int i = 0; i < toIterate.Count; i++)
+		{
+			for (var j = i + 1; j < toIterate.Count; j++)
+			{
+				yield return (toIterate[i], toIterate[j]);
+			}
+		}
+	}
+
 	public static void Print<T>(this IEnumerable<T> items)
 	{
 		foreach (var item in items)

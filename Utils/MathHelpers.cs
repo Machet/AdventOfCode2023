@@ -20,4 +20,28 @@ public static class MathHelpers
 		var gcm = GetGreatestCommonDenominator(values);
 		return values.Aggregate((a, b) => a / gcm * b);
 	}
+
+	public static IEnumerable<long> GetDivisorsOf(long n)
+	{
+		if (n == 0)
+		{
+			yield break;
+		}
+
+		for (long i = 1; i <= Math.Sqrt(Math.Abs(n)); i++)
+		{
+			if (n % i == 0)
+			{
+				yield return i;
+				yield return -i;
+				var second = n / i;
+
+				if (i != second)
+				{
+					yield return second;
+					yield return -second;
+				}
+			}
+		}
+	}
 }

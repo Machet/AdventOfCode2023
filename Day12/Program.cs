@@ -1,4 +1,6 @@
-﻿using Utils;
+﻿using Day12;
+using Day12.Automata;
+using Utils;
 
 var input = File.ReadAllLines("input.txt")
 	.Select(line => Parse(line))
@@ -9,91 +11,50 @@ var unfoldedInput = input.Select(i => new DataRecord(
 		Enumerable.Repeat(i.groups, 5).SelectMany(x => x).ToList()))
 	.ToList();
 
-long count = 0;
-for (int i = 0; i < unfoldedInput.Count; i++)
+var result1 = input.Select(i => GetPossibleArrangements(i)).Sum();
+var result2 = unfoldedInput.Select(i => GetPossibleArrangements(i)).Sum();
+
+Console.WriteLine("1: " + result1);
+Console.WriteLine("2: " + result2);
+
+static long GetPossibleArrangements(DataRecord record)
 {
-	count += GetPossibleTemplatesCount(unfoldedInput[i]);
-	Console.WriteLine(count);
+	var processingState = new ProcessingState();
+	processingState.Add(BuildParser(record.groups));
+	var template = record.template;
+
+	for (int i = 0; i < template.Length; i++)
+	{
+		processingState = processingState.Process(template[i], template.Length - i);
+	}
+
+	return processingState.GetValidStatesCount();
 }
 
-Console.WriteLine("1: " + input.Select(i => GetPossibleTemplatesCount(i)).Sum());
-Console.WriteLine("2: " + count);
-
-long GetPossibleTemplatesCount(DataRecord record)
+static ParsingState BuildParser(List<int> groups)
 {
-	var toProcess = new Stack<State>();
-	toProcess.Push(new State(record.template, record.groups, 0));
-	long count = 0;
+	var waitTillEnd = new WaitForEnd("end");
 
-	while (toProcess.Count > 0)
+	ParsingState current = waitTillEnd;
+	var expectedLength = 0;
+
+	for (int i = groups.Count - 1; i >= 0; i--)
 	{
-		var state = toProcess.Pop();
-		foreach (var nextState in GetNextStates(state).ToList())
+		var group = groups[i];
+		expectedLength = expectedLength > 0 ? expectedLength + 1 : expectedLength;
+		current = new ExpectEmpty($"expect space after g{i}", current, expectedLength, expectedLength == 0);
+
+		for (int j = group; j > 1; j--)
 		{
-			if (nextState.IsComplete)
-			{
-				if (nextState.groups.Count == 0)
-				{
-					count++;
-				}
-			}
-			else
-			{
-				toProcess.Push(nextState);
-			}
+			expectedLength++;
+			current = new ExpectGroup($"expect g{i}[{group}] - item({j})", current, expectedLength);
 		}
+
+		expectedLength++;
+		current = new WaitForGroup($"wait for g{i}[{group}] - item(1)", current, expectedLength);
 	}
 
-	return count;
-}
-
-IEnumerable<State> GetNextStates(State state)
-{
-	if (!state.CanFitGroups) yield break;
-
-	var nextGroup = state.groups.Select(i => (int?)i).FirstOrDefault();
-
-	if (nextGroup != null && CanFitGroup(state.template, state.startingPosition, nextGroup.Value))
-	{
-		yield return new State(state.template, state.groups.Skip(1).ToList(), state.startingPosition + nextGroup.Value + 1);
-	}
-
-	if (CanFitSpace(state.template, state.startingPosition))
-	{
-		yield return new State(state.template, state.groups, state.startingPosition + 1);
-	}
-}
-
-bool CanFitGroup(string template, int pos, int length)
-{
-	if (pos + length > template.Length) return false;
-
-	for (int i = pos; i < pos + length; i++)
-	{
-		if (template[i] == '.') return false;
-	}
-
-	return CanFitSpace(template, pos + length);
-}
-
-string ReplaceWithGroup(string template, int startingPosition, int value)
-{
-	var x = template.Remove(startingPosition, value);
-	x = x.Insert(startingPosition, new string(Enumerable.Repeat('#', value).ToArray()));
-	return ReplaceWithSpace(x, startingPosition + value);
-}
-
-bool CanFitSpace(string template, int pos)
-{
-	return template.Length <= pos || template[pos] != '#';
-}
-
-string ReplaceWithSpace(string template, int startingPosition)
-{
-	if (startingPosition >= template.Length) return template;
-
-	var x = template.Remove(startingPosition, 1);
-	return x.Insert(startingPosition, ".");
+	return current;
 }
 
 DataRecord Parse(string line)
@@ -102,15 +63,10 @@ DataRecord Parse(string line)
 	return new DataRecord(x[0], x[1].ToIntList(','));
 }
 
-record DataRecord(string template, List<int> groups);
-record State(string template, List<int> groups, int startingPosition)
+record DataRecord(string template, List<int> groups)
 {
-	public int GroupsLength = groups.Any() ? groups.Sum() + groups.Count() - 1 + startingPosition : 0;
-	public bool CanFitGroups = !groups.Any() || groups.Sum() + groups.Count() - 1 + startingPosition <= template.Length;
-	public bool IsComplete = startingPosition >= template.Length;
-
 	public override string ToString()
 	{
-		return $"{(!IsComplete ? template.Insert(startingPosition, "|") : template)} {string.Join(",", groups)}, pos: {startingPosition})";
+		return $"{template} {string.Join(",", groups)}";
 	}
 }
